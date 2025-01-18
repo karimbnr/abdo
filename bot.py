@@ -1,23 +1,27 @@
-from telegram import Bot
+import os
 from telegram.ext import Updater, CommandHandler
 
-# استبدل هذا بالقيمة الخاصة بك من BotFather على تيليجرام
-TOKEN = '7725005982:AAFdU4hhpQduvWOTnsN5e5--dDbC7lBtlmo'
+# جلب TOKEN من المتغير البيئي
+TOKEN = os.getenv("7725005982:AAFdU4hhpQduvWOTnsN5e5--dDbC7lBtlmo")
 
 def start(update, context):
-    update.message.reply_text('مرحبًا! أنا بوت تيليجرام الخاص بك.')
+    update.message.reply_text("مرحبًا! أنا بوت تيليجرام الخاص بك.")
 
 def main():
+    if not TOKEN:
+        print("Error: TOKEN not found!")
+        return
+
+    # إعداد البوت
     updater = Updater(TOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
-    # إضافة وظيفة /start
-    start_handler = CommandHandler('start', start)
-    dispatcher.add_handler(start_handler)
+    # ربط أمر /start بالدالة start
+    dispatcher.add_handler(CommandHandler("start", start))
 
-    # بدء البوت
+    # تشغيل البوت
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
